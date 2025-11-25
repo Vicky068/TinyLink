@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { router as linkRoutes } from "./routes/links.js";
-import pool from "./db.js";
+import db, { ensureSchema } from "./db.js";
 
 dotenv.config();
 
@@ -25,7 +25,7 @@ app.get("/healthz", (req, res) => res.json({ ok: true, version: "1.x" }));
 // Quick DB test endpoint
 app.get("/test-db", async (req, res) => {
   try {
-    const result = await pool.query("SELECT NOW()");
+    const result = await db.query("SELECT NOW()");
     res.json({ success: true, server_time: result.rows[0] });
   } catch (err) {
     console.error('DB test error:', err);
@@ -37,7 +37,7 @@ app.get("/:code", async (req, res) => {
   const { code } = req.params;
   try {
     // Atomically increment clicks and fetch the target URL
-    const result = await pool.query(
+    const result = await db.query(
       "UPDATE links SET clicks = clicks + 1, last_clicked = NOW() WHERE code=$1 RETURNING url",
       [code]
     );
@@ -56,5 +56,10 @@ app.get("/:code", async (req, res) => {
 
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "views/index.html")));
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+const PORT = process.env.PORT || 5000;
+// Ensure DB schema in background (do not crash process if it fails).
+ensureSchema().catch((err) => {
+  console.error('ensureSchema error:', err);
+});
+
+app.listen(PORT, () => console.log('Server running on ' + PORT));
