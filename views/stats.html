@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>TinyLink - Stats</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body class="bg-gradient-to-b from-slate-50 to-white text-gray-800">
+		<div class="max-w-3xl mx-auto p-6">
+			<header class="mb-6">
+				<h1 class="text-2xl font-extrabold">Link Stats</h1>
+				<p class="text-sm text-gray-500">Statistics and details for your short code.</p>
+			</header>
+
+			<div id="content" class="bg-white p-6 rounded shadow">
+				<div id="msg" class="text-sm mb-4 text-red-500"></div>
+				<div id="statsCard" class="space-y-3"></div>
+				<div class="mt-4 flex gap-2">
+					<button id="copyBtn" class="px-3 py-2 bg-green-500 text-white rounded">Copy Short URL</button>
+					<a id="openBtn" class="px-3 py-2 bg-indigo-600 text-white rounded" href="#">Open Link</a>
+					<a href="/" class="px-3 py-2 bg-gray-100 rounded">Back</a>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const q = (s)=>document.querySelector(s);
+			const params = new URLSearchParams(location.search);
+			const code = params.get('code');
+			const msg = q('#msg');
+			const statsCard = q('#statsCard');
+			const copyBtn = q('#copyBtn');
+			const openBtn = q('#openBtn');
+
+			function makeShortUrl(code){ return `${location.origin}/${encodeURIComponent(code)}`; }
+
+			if(!code){ msg.textContent = 'Missing code parameter in URL.'; copyBtn.disabled=true; openBtn.href = '#'; }
+
+			async function load(){
+				try{
+					const res = await fetch('/api/links/' + encodeURIComponent(code));
+					if(!res.ok){ msg.textContent = 'Not found'; copyBtn.disabled=true; openBtn.href = '#'; return; }
+					const data = await res.json();
+					statsCard.innerHTML = `
+						<div class="text-sm text-gray-600"><strong>Code:</strong> <span class="font-medium">${data.code}</span></div>
+						<div class="text-sm text-gray-600"><strong>URL:</strong> <a class="text-blue-600" href="${data.url}" target="_blank">${data.url}</a></div>
+						<div class="text-sm text-gray-600"><strong>Short URL:</strong> <a class="text-indigo-600" href="${makeShortUrl(data.code)}" target="_blank">${makeShortUrl(data.code)}</a></div>
+						<div class="text-sm text-gray-600"><strong>Clicks:</strong> <span class="font-medium">${data.clicks ?? 0}</span></div>
+						<div class="text-sm text-gray-600"><strong>Last Clicked:</strong> ${data.last_clicked ? new Date(data.last_clicked).toLocaleString() : '-'}</div>
+						<div class="text-sm text-gray-600"><strong>Created At:</strong> ${new Date(data.created_at).toLocaleString()}</div>
+					`;
+					openBtn.href = makeShortUrl(data.code);
+					copyBtn.addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText(makeShortUrl(data.code)); alert('Copied: ' + makeShortUrl(data.code)); }catch(e){ alert('Copy failed'); } });
+				}catch(err){ console.error(err); msg.textContent = 'Network error'; }
+			}
+
+			if(code) load();
+		</script>
+	</body>
+</html>

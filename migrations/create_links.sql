@@ -1,0 +1,8 @@
+-- Migration: create links table
+CREATE TABLE IF NOT EXISTS links (
+  code VARCHAR(10) PRIMARY KEY,
+  url TEXT NOT NULL,
+  clicks INT DEFAULT 0,
+  last_clicked TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);

@@ -1,0 +1,141 @@
+{
+  "info": {
+    "name": "TinyLink API Collection",
+    "_postman_id": "d9e1d2a2-0000-4000-8000-000000000000",
+    "description": "Collection of TinyLink API endpoints for testing (health, DB test, create, list, stats, delete, redirect).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "testCode",
+      "value": "abc123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Healthcheck",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/healthz",
+          "host": ["{{baseUrl}}"],
+          "path": ["healthz"]
+        }
+      }
+    },
+    {
+      "name": "DB Test",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/test-db",
+          "host": ["{{baseUrl}}"],
+          "path": ["test-db"]
+        }
+      }
+    },
+    {
+      "name": "Create Link (auto code)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"https://example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/links",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","links"]
+        }
+      }
+    },
+    {
+      "name": "Create Link (custom code)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"https://example.com/page\",\n  \"code\": \"{{testCode}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/links",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","links"]
+        }
+      }
+    },
+    {
+      "name": "List Links",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/links",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","links"]
+        }
+      }
+    },
+    {
+      "name": "Get Link Stats",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/links/{{testCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","links","{{testCode}}"]
+        }
+      }
+    },
+    {
+      "name": "Delete Link",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/links/{{testCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","links","{{testCode}}"]
+        }
+      }
+    },
+    {
+      "name": "Redirect (inspect headers)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/{{testCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{testCode}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Note: In Postman disable 'Follow redirects' to inspect 302 response headers." 
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
